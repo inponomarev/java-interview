@@ -39,17 +39,1852 @@ Ivan Ponomarev
 
 * Staff Engineer @ Synthesized.io
 * Teaching @ МФТИ and London Northeastern University
+* PC member at various JUGRU conferences
+
+|===
+
+== Взглянем на задачу глазами интервьюера
+
+[%step]
+* За короткое время надо понять, обладаете ли вы достаточно обширными познаниями
+* Задаются вопросы на случайные факты.
+** Неправильный ответ не гарантирует, что вы плохо знаете другие вещи
+** Правильный ответ не гарантирует, что вы хорошо знаете другие вещи
+
+== Что происходит дальше
+
+[%step]
+* Вопросы утекают во всевозможные посты, сборники вопросов и т. д. и перестают работать
+* Придумываются всё более заковыристые, всё менее показательные вопросы
+* Дурная борьба продолжается
+
+== В идеальном случае...
+"Знание некоторых принципов легко компенсирует незнание некоторых фактов"
+
+(Какой-то мудрец)
+
+== Источники познаний о некоторых принципах
+
+Курсы лекций
+
+[cols="50a,50a"]
+|===
+|
+
+Тагир Валеев, CSC +
+Программирование на Java
+
+image::valeev.jpg[]
+|
+
+Иван Пономарев, МФТИ. Core Java https://inponomarev.ru/corejava
+
+image::ponomarev.jpg[]
 
 
 |===
 
-== Лекция 1
+== Книги
 
-[%step]
-* Раз
-* Два
-* Три
+[cols="25a,25a,25a,25a"]
+|===
+|
 
+Core Java
+
+image::horstmann.jpg[]
+
+|
+
+Modern Java in Action
+
+image::urma.jpg[]
+|
+
+Effective Java
+
+image::bloch.jpg[]
+|
+Java Concurrency in Practice
+
+image::goetz.jpg[]
+
+|===
+
+
+-- можно уверенно утверждать, что после них вы пройдёте собес с _адекватным_ интервьюером
+
+== Неадекватный вопрос
+
+Что произойдёт?
+[source,java]
+----
+var i = 1;
+while (false) {
+  i = 2;
+}
+System.out.println(i);
+----
+
+[.fragment]
+Не скомпилируется, потому что unreachable statement +
+(see JLS 14.22, https://docs.oracle.com/javase/specs/jls/se21/html/jls-14.html#jls-14.22)
+
+== Другой неадекватный вопрос
+Что произойдёт?
+[source,java]
+----
+var i = 1;
+if (false) {
+  i = 2;
+}
+System.out.println(i);
+----
+[.fragment]
+Скомпилируется и выведет 1, потому что в том же JLS 14.22 сделано исключение для `if`.
+
+== Ещё о неадекватных интервью
+
+* 2016 Александр Маторин — Неадекватное Java-интервью https://www.youtube.com/watch?v=AR9dtVaEUSM
+* 2017, 2019 Антон Архипов -- Неадекватное Java-интервью https://www.youtube.com/watch?v=Vlb_Is-rRTQ
+
+"Никакие результаты интервью, тестовых заданий, энциклопедические знания не показывают, КАК ЭТОТ ЧЕЛОВЕК БУДЕТ РАБОТАТЬ" (с) Антон Архипов
+
+
+== Что нынче спрашивают на Java интервью?
+
+Кирилл Грищук "За последние два месяца я прошёл более 30 собеседований" +
+(подкаст Javaswag с Кириллом https://javaswag.github.io/episode/48/)
+
+https://kirya522.tech/posts/interview/
+
+[cols="33a,33a,33a"]
+|===
+| image::g1.jpg[]
+| image::g2.jpg[]
+| image::g3.jpg[]
+|===
+
+== Понимание в целом
+
+* Что такое Java?
+
+image::thinking.png[]
+
+== Понимание платформы в целом
+
+* Что такое Java?
+** Ultimate source of truth:
+https://docs.oracle.com/javase/specs/index.html
+*** Java Language Specification (872 стр)
+*** Java Virtual Machine Specification (626 стр)
+
+== Фундаментальные вопросы
+
+* Что такое байт-код?
+* Что происходит с байт-кодом во время выполнения?
+** Верификация
+** Интерпретация
+** JIT-компиляция
+
+== Garbage Collection (вопросы с бесконечной глубиной)
+
+* Что такое Garbage Collector?
+* Как работает Garbage Collector в Java?
+* Какие бывают Garbage Collectors?
+* Зачем вообще нужны разные Garbage collectors?
+
+https://www.geeksforgeeks.org/different-ways-to-collect-garbage-in-java-hotspot-jvm/
+
+
+== Инфраструктура
+
+* Умеете ли вы пользоваться Maven и Gradle?
+
+* Maven Central координаты, репозитории.
+
+* Что делать, если "Could not find artifact"?
+
+==  Object
+
+Бессмертная классика:
+
+"Назови все методы класса Object"
+
+== Object: абсолютная база :-)
+
+[source,java]
+----
+public String toString()
+public native int hashCode();
+public boolean equals(Object obj)
+----
+
+== Как впечатлить интервьюера
+
+Формальный контракт `equals`:
+
+1. Рефлексивность: +
+stem:[\forall x \ne \mathrm{null} (x.equals(x))]
+2. Симметричность: +
+stem:[\forall x \ne \mathrm{null} \, \forall y \ne \mathrm{null} (x.equals(y) \iff y.equals(x))]
+3. Транзитивность: +
+stem:[\forall x \ne \mathrm{null} \, \forall y \ne \mathrm{null} \, \forall z \ne \mathrm{null} (x.equals(y) \& y.equals(z) \Rightarrow x.equals(z))]
+4. Консистентность: если сравниваемые объекты не изменялись, повторный вызов `equals` должен возвращать одно и то же значение.
+5. stem:[\forall x \ne \mathrm{null} (x.equals(\mathrm{null}) = \mathrm{false})]
+
+== Как впечатлить интервьюера
+
+Формальный контракт `hashCode`:
+
+1. Консистентность: если объект не изменялся, повторный вызов `hashCode` должен возвращать одно и то же значение (но не обязательно одно и то же между разными запусками приложения)
+2. Связь с `equals`: +
+stem:[\forall x \forall y (x.equals(y) \Rightarrow x.hashCode() = y.hashCode())]
+3. Хотя +
+stem:[x.hashCode() = y.hashCode() \Rightarrow x.equals(y)] +
+и не обязательно, но желательно для большинства случаев.
+
+== Добиваем вопрос про equals/hashCode
+
+* Кодогенерация в IDE
+* Lombok
+* Java 14+: records
+* Библиотека EqualsVerifier: https://jqno.nl/equalsverifier/
+
+== Методы Object: что-то про concurrency
+
+[source,java]
+----
+public final native void notify();
+public final native void notifyAll();
+public final void wait()
+//и ещё два разных overloaded-варианта wait
+----
+
+== Методы Object: что-то про рефлексию
+
+[source,java]
+----
+public final native Class<?> getClass()
+----
+
+== Методы Object: неведомая фигня и неудавшиеся идеи
+
+[source,java]
+----
+protected Object clone()
+
+protected void finalize()
+----
+
+[.fragment]
+Популярный вопрос: "расскажи про `final`, `finally` и `finalize` ".
+
+== Wrapper классы, примитивы, строки
+
+Примитивные типы несовместимы с объектами. +
+Нельзя сделать `List<int>` (по крайней мере, пока).
+
+Поэтому есть Wrapper Classes:
+[cols="50a,50a"]
+|===
+| `byte`, `short`, `int`, `long` | `Byte`, `Short`, `Integer`, `Long`
+|     `char`               | `Character`
+|    `float`, `double`       | `Float`, `Double`
+|     `boolean`            | `Boolean`
+|===
+
+== Кэширование (object pool)
+
+[cols="35a,65a"]
+|====
+.^a|
+
+[source,java]
+----
+Integer five1 = Integer.valueOf(5);
+Integer five2 = Integer.valueOf(5);
+/* DO NOT DO THIS!!*/
+Integer five3
+  = new Integer(5);
+----
+^.^a|
+[graphviz, "ipool.png"]
+-----
+digraph G {
+  node [shape="rectangle"]
+  graph [ dpi = 140 ];
+  rankdir="LR";
+
+      subgraph cluster_s2{
+          subgraph cluster_s3 {
+
+            o1[label="5"; shape="circle"; style=filled; fillcolor="#ffffcc"]
+
+            c1[label="3"; shape="circle"; style=filled; fillcolor="#ffffcc"]
+            c2[label="7"; shape="circle"; style=filled; fillcolor="#ffffcc"]
+            label="Integer Object Pool"
+            c3[label="-1"; shape="rectangle"; style=invis; ]
+            label="Integer Object Pool"
+
+            o1 -> c1 [style="invis"]
+            o1 -> c2 [style="invis"]
+
+          }
+        o2[label="5"; shape="circle"; style=filled; fillcolor="#ffffcc"]
+
+        label="Memory Heap"
+      }
+  five1->o1
+  five2->o1
+  five3->o2
+}
+-----
+|====
+
+== Что и как кэшируется
+
+* `Integer`, `Short`, `Long` -- -128..127
+* `Byte` -- полностью (-128..127)
+* `Character` -- 0..127
+* `Boolean` -- `Boolean.TRUE` и `Boolean.FALSE`
+* `Float`, `Double` -- не кэшируются
+
+Вывод: надо использовать autoboxing и `valueOf`, а `new` не надо использовать.
+
+== Вопросы
+
+* Для чего нужны Wrapper классы?
+* Что такое automatic boxing/unboxing? Какие подводные камни?
+* Сравнение по `equals` и `==`:
+[source,java]
+----
+Integer a = 1;
+Integer b = 1;
+Integer c = 999;
+Integer d = 999;
+System.out.println(a == b); // ?
+System.out.println(c == d); // ?
+----
+== Неадекватный вопрос
+
+[source]
+----
+-XX:AutoBoxCacheMax=NEWVALUE
+----
+
+== Строки
+Устроены практически так же, как boxed primitives
+
+[cols="35a,65a"]
+|====
+.^a|
+
+[source,java]
+----
+String name1 = "John Doe";
+String name2 = "John Doe";
+/* DO NOT DO THIS!!*/
+String name3
+  = new String("John Doe");
+----
+^.^a|
+
+[graphviz, "stringpool.png"]
+----
+digraph G {
+  node [shape="rectangle"]
+  graph [ dpi = 180 ];
+  rankdir="LR";
+
+      subgraph cluster_s2{
+          subgraph cluster_s3 {
+            o1[label="John Doe"; style=filled; fillcolor="#ffffcc"]
+            label="String Constant Pool"
+          }
+        o2[label="John Doe"; style=filled; fillcolor="#ffffcc"]
+
+        label="Memory Heap"
+      }
+  name1->o1
+  name2->o1
+  name3->o2
+}
+----
+|====
+
+== Внутреннее устройство строк
+
+* Неадекватный вопрос: что делает метод `intern()`?
+
+* Больше подробностей про эволюцию внутреннего устройства строк:"LJV: Чему нас может научить визуализация структур данных в Java"
+
+** https://www.youtube.com/watch?v=eIUsCTsLXlM
+** https://habr.com/ru/articles/599045/
+
+== Иерархия классов исключений
+
+[plantuml, exceptionclasses, png]
+----
+@startuml
+
+skinparam dpi 150
+
+class Throwable {
+  + getMessage(): String
+  + getCause(): Throwable
+  + initCause(): Throwable
+  + getStackTrace(): StackTraceElement[]
+}
+
+class Error
+note bottom: For system use only
+
+
+Throwable <|-- Error
+Throwable <|-- Exception
+Exception <|-- RuntimeException
+
+
+RuntimeException <|-- "<Any unchecked exception>"
+
+Exception <|-- "<Any checked exception>"
+@enduml
+----
+
+== Вопросы
+
+* Какие в Java бывают исключения?
+** Можем ли мы выбрасывать `Throwable`?
+** А `Error`?
+** А `Exception`?
+* Какое внутренне состояние хранит в себе `Throwable`?
+* Checked vs Unchecked exceptions?
+
+== Переопределение методов с checked-исключениями
+
+
+[plantuml, overriding, png]
+----
+@startuml
+
+skinparam dpi 200
+
+class Foo {
+    + foo() throws FooException
+}
+
+Foo <|-- Bar
+
+class Bar {
+    + foo() throws BarException
+}
+
+
+FooException <|-- BarException
+
+Foo . FooException
+Bar . BarException
+@enduml
+----
+
+* Исключение может быть того же типа или субтипа
+* Не возбраняется, если его не будет вообще
+
+== "Умная" проверка типа перевыбрасываемого исключения
+
+[source,java]
+----
+. . . throws SQLException . . .
+
+try {
+  //доступ к БД -- может выбросить SQLException
+} catch (Exception e) {
+  logger.log(level, message, e);
+  //хотя Exception есть тип более широкий,
+  //чем задекларирован в методе, компилятор поймёт,
+  //что всё ок
+  throw e;
+}
+----
+
+== Что делать с checked-исключением?
+
+1. Задекларировать в методе
+2. Поймать, _правильно_ обернуть через `initCause()` и перевыбросить declared checked/unchecked exception.
+3. Lombok's `@SneakyThrows`
+4. "Throw early, catch late" правило
+
+== Очень адекватный вопрос
+
+* Ваше мнение по поводу функциональности checked-исключений в Java?
+
+== Try-catch-finally
+
+* Что будет результатом выполнения
+
+[source,java]
+----
+public Integer get() {
+    try {
+        return 1;
+    } catch (Exception ignored) {
+        return 2;
+    } finally {
+        return 3;
+    }
+}
+----
+
+[.fragment]
+3: finally выполняется всегда, даже если `return` "выскакивает" из try-блока
+
+
+== Try-catch-finally
+
+* Что будет результатом выполнения
+
+[source,java]
+----
+public Integer get() {
+    try {
+        throw new RuntimeException();
+    } catch (Exception ignored) {
+        return 2;
+    } finally {
+        return 3;
+    }
+}
+----
+
+[.fragment]
+3: finally выполняется всегда
+
+== try-with-resources
+
+[plantuml, closeable, png]
+----
+@startuml
+
+skinparam dpi 200
+
+interface AutoCloseable {
+    + close() throws Exception
+}
+
+AutoCloseable <|-- Closeable
+
+interface Closeable {
+    + close() throws IOException
+}
+
+
+Exception <|-- IOException
+
+Closeable . IOException
+AutoCloseable . Exception
+@enduml
+----
+
+[source,java]
+----
+try (Foo first = new Foo();
+     Foo second = new Foo()) {
+    ....
+}
+
+----
+
+== Что даёт try-with-resources?
+
+* избегаем nested-блоков
+
+* избегаем потери исходного исключения если сломалось что-то в finally-блоке
+
+* нет никакого смысла использовать try-finally, если можно использовать try-with-resources
+
+== Дженерики
+
+1. Параметризованные классы и параметризованные методы
+2. Type Erasure и связанные с ним ограничения (исторический контекст)
+
+[source,java]
+----
+//Параметризованный класс
+public class Pair<T> {
+  private T first;  private T second;
+  ...
+}
+
+//Параметризованный метод
+public <T> T getRandomItem(T... items) {
+  return items[ThreadLocalRandom.current().nextInt(items.length)];
+}
+----
+
+== Стирание типов -> невозможность определить параметр типа в Runtime
+
+[plantuml, rawtype, png]
+----
+@startuml
+
+skinparam dpi 150
+
+
+class Pair {
+(raw type)
+---
+}
+
+class "Pair<String>" {
+
+}
+
+class "Pair<Manager>" {
+
+}
+
+
+
+Pair <|-- "Pair<String>"
+
+Pair <|-- "Pair<Manager>"
+
+@enduml
+----
+
+[source,java]
+----
+//ошибка компиляции! не знаем мы в рантайме параметр типа!
+if (a instanceof Pair<String>) ...
+
+//вот так -- получится...
+if (a instanceof Pair<?>) ...
+----
+
+== Стирание типов до Object -> невозможность использовать примитивные типы в качестве параметров
+
+[source,java]
+----
+//увы, невозможно!
+List<int>  integers = ... //ошибка компиляции!
+
+List<Integer> integers = ...
+integers.add(42); /*под капотом будет autoboxing:
+integers.add(Integer.valueOf(42);*/
+int v = integers.get(0); /*под капотом будет
+unboxing: v = integers.get(0).intValue();*/
+----
+
+== Примитивы и дженерики
+
+* "Костыли" для избегания боксинга.
+** В стандартной библиотеке:
+*** `Stream<Integer>` -> `IntStream`
+*** `Stream<Double>` -> `DoubleStream`.
+** В специализированных библиотеках вроде http://fastutil.di.unimi.it/[fastutil]:
+*** `ArrayList<Integer>` -> `IntArrayList`,
+*** `HashMap<Integer, V>` -> `Int2ObjectMap<V>` (реальная потребность в таких библиотеках возникает ультра-редко, но осведомленность на собесе пойдёт вам в плюс)
+* День завтрашний: Project Valhalla,  specialized generics. Решит проблему раз и навсегда.
+
+== Массивы и дженерики
+
+* Так можно делать? Почему?
+
+[source,java]
+----
+List<String>[] a = new ArrayList<String>[10];
+----
+
+[.fragment]
+Не скомпилируется: Generic Array Creation. Такой массив не будет иметь полную информацию о своих элементах и через него можно будет устроить Heap Pollution
+
+== Массивы и дженерики: varargs
+
+* А так можно делать?
+
+[source,java]
+----
+void dangerous(List<String>... stringLists) {
+    //какой тип у stringLists?
+}
+----
+
+[.fragment]
+Да, но для устранения compiler warning нужнопоставить аннотацию `@SafeVarargs`, пообещав не менять содержимое массива и не передавать ссылку на массив за пределы метода.
+
+== Heap Pollution
+
+Что тут происходит?
+
+[source,java]
+----
+Pair<Integer> intPair = new Pair<>(42, 0);
+Pair<?> pair = intPair;
+Pair<String> stringPair = (Pair<String>) pair;
+stringPair.b = "foo";
+System.out.println(intPair.a * intPair.b);
+----
+
+[.fragment]
+Heap Pollution: ситуация, когда переменная параметризованного типа ссылается на объект несовместимого типа. К сожалению, такое состояние достижимо в Java.
+
+== Вариантность типов
+
+* Что произойдёт при попытке скомпилировать такой код?
+[source,java]
+----
+    List<?> l = new ArrayList<Object>();
+    l.add(new Object()); //line 1
+    l.add("hello");      //line 2
+    l.add(null);         //line 3
+----
+
+[.fragment]
+Unbounded wildcard `<?>` означает "неизвестный тип", +
+поэтому Java выдаст ошибку компиляции на строчках 1 и 2, +
+и скомпилирует строчку 3.
+
+== Вариантность типов (или зачем нужны wildcard types)
+
+[plantuml,hier,png]
+----
+@startuml
+
+skinparam dpi 150
+
+class Person
+class Employee
+class Manager
+
+Person <|- Employee
+Employee <|- Manager
+
+@enduml
+----
+
+[source,java]
+----
+Person[] pa = ...;     List<Person> pl = ...;
+Employee[] ea = ...;   List<Employee> el = ...;
+Manager[] ma = ...;    List<Manager> ml = ...;
+
+ea = pa;  //line 1
+el = pl;  //line 2
+
+ea = ma;  //line 3
+ml = el;  //line 4
+----
+[.fragment]
+1 и 2 не скомпилируются, т. к. `Employee` есть более специфичный тип чем `Person` и в массиве (списке) персон могут находиться не сотрудники. 3 скомпилируется в силу ковариантности массивов, 4 не скомпилируется в силу инвариантности дженериков.
+
+== Вариантность типов: PECS-правило
+
+* Объясните, почему у метода `Collections.max` такая сигнатура:
+
+[source,java]
+----
+public static <T> T max (
+   Collection<? extends T> coll,
+   Comparator<? super T> comp)
+----
+[.fragment]
+PECS: Producer Extends, Consumer Super
+
+== Про дженерики и вариантность
+
+* Лекция 6: Generics https://www.youtube.com/watch?v=HFs_ZPNkdjo
+* Вариантность типов в Java и Kotlin: https://www.youtube.com/watch?v=YbpHAD0sh1s
+
+== Collections API: потомки Collection
+
+[plantuml,intf-coll,png]
+----
+@startuml
+
+skinparam dpi 200
+
+left to right direction
+
+interface Iterable {
+   Iterator<T> iterator()
+}
+interface Collection {
+   int size()
+   boolean isEmpty()
+   boolean contains(Object o)
+   <T> T[] toArray(T[] a)
+   boolean add(E e)
+   boolean remove(Object o)
+}
+interface List {
+   E get(int index)
+   E set(int index, E element)
+   void add(int index, E element)
+   E remove(int index)
+
+}
+interface Set
+interface SortedSet {
+   subSet(E fromElement, E toElement)
+   headSet(E toElement)
+   tailSet(E fromElement)
+   first()
+   last()
+}
+interface NavigableSet {
+   E lower(E e)
+   E floor(E e)
+   E ceiling(E e)
+   E higher(E e)
+}
+interface Queue {
+
+}
+
+interface Deque {
+  void addFirst/Last(E e)
+  boolean offerFirst/Last(E e)
+  E removeFirst/Last()
+  E pollFirst/Last()
+  E getFirst/Last()
+  E peekFirst/Last()
+  void push(E e) = addFirst
+  E pop() = removeFirst
+}
+
+Iterable <|.. Collection
+Collection <|.. List
+Collection <|.. Set
+Set <|.. SortedSet
+SortedSet <|.. NavigableSet
+Collection <|.. Queue
+Queue <|.. Deque
+@enduml
+----
+
+== Вопросы
+
+1. Как устроен `ArrayList`/`LinkedList`?
+2. Как устроена вставка? Какова асимптотическая сложность соответствующих операций? ("Amortized complexity")
+3. Чем так плох `LinkedList`?
+4. Как устроен `Set`? (урезанный `Map`)
+
+== ArrayList
+
+[graphviz, "arraylist-inside.png"]
+-----
+digraph Java {
+graph [ dpi = 180 ];
+n356573597[label="ArrayList|{size: 3}",shape=record];
+n356573597 -> n325040804[label="elementData",fontsize=12];
+n325040804[shape=record, label="foo|bar|baz|null|null|null|null|null|null|null"];
+}
+-----
+
+== Свойства `ArrayList`
+
+* `get(int index)` is *O(1)*  <- *main benefit of `ArrayList<E>`*
+* `add(E element)` is *O(1)* amortized, but *O(n)* worst-case since the array must be resized and copied
+* *O(n)* (with *n/2* steps on average):
+** `add(int index, E element)`
+** `remove(int index)`
+** `Iterator.remove()`
+** `ListIterator.add(E element)`
+
+== LinkedList
+
+[graphviz]
+--
+digraph Java {
+rankdir="LR";
+node[shape=plaintext];
+graph [ dpi = 180 ];
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>LinkedList</td>
+</tr>
+<tr>
+<td>size: 4</td>
+</tr>
+<tr>
+<td>modCount: 4</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>prev: null</td>
+</tr>
+<tr>
+<td>item: 1</td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Node</td>
+</tr>
+<tr>
+<td>item: 2</td>
+</tr>
+</table>
+>];
+n3 -> n2[label="prev",fontsize=12,constraint=false];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Node</td>
+</tr>
+<tr>
+<td>item: 3</td>
+</tr>
+</table>
+>];
+n4 -> n3[label="prev",fontsize=12,constraint=false];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>next: null</td>
+</tr>
+<tr>
+<td>item: 4</td>
+</tr>
+</table>
+>];
+n5 -> n4[label="prev",fontsize=12,constraint=false];
+n4 -> n5[label="next",fontsize=12];
+n3 -> n4[label="next",fontsize=12];
+n2 -> n3[label="next",fontsize=12];
+n1 -> n2[label="first",fontsize=12];
+n1 -> n5[label="last",fontsize=12,constraint=false];
+}
+--
+
+== Свойства `LinkedList`
+
+* Implements `List` and `Deque`
+* *O(n)* (with *n/4* steps on average)
+** `get(int index)`
+** `remove(int index)`
+** `add(int index, E element)` (but O(1) when adding to head or tail of the list)
+* *O(1)*
+* `add(E element)`
+* `Iterator.remove()`
+* `ListIterator.add(E element)`
+
+== Does anyone use LinkedList?
+
+image::blochonlinkedlist.png[{image-70-width}]
+
+== Интерфейсы коллекций: некоторые реализации Map
+
+[plantuml, colintf, png]
+----
+@startuml
+
+skinparam dpi 150
+
+interface Map<K,V> {
+V get(Object key)
+V put(K key, V value)
+V remove(Object key)
+void clear()
+...
+--default methods--
+V getOrDefault(Object key, V defaultValue)
+default V putIfAbsent(K key, V value)
+...
+}
+
+interface NavigableMap<K,V> {
+K lowerKey(K key);
+K floorKey(K key);
+K ceilingKey(K key);
+K higherKey(K key);
+--
+...
+}
+
+class HashMap<K,V>
+class LinkedHashMap<K,V>
+class TreeMap<K,V>
+class IdentityHashMap<K,V>
+class ConcurrentSkipListMap<K,V>
+class EmptyMap<K,V>
+class MapN<K,V>
+class EnumMap<K extends Enum<K>,V>
+class ConcurrentHashMap<K,V>
+
+Map <|.. TreeMap
+Map <|.... EmptyMap
+Map <|.. HashMap
+Map <|.... ConcurrentHashMap
+Map <|.... WeakHashMap
+Map <|.... MapN
+Map <|.. LinkedHashMap
+Map <|.... EnumMap
+Map <|.. IdentityHashMap
+Map <|.. ConcurrentSkipListMap
+
+Map <|- NavigableMap
+
+NavigableMap <|.. TreeMap
+NavigableMap <|.. ConcurrentSkipListMap
+
+@enduml
+----
+
+== Вопросы
+
+1. Когда какая из этих мап нужна?
+2. Как устроена каждая из мап?
+3. Могут ли мутабельные объекты служить ключами мапы?
+4. Какова асимптотическая сложность доступа к элементу той или иной мапы?
+
+== Неувядающая классика: как работает HashMap?
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+graph [ dpi = 130 ];
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='5'>HashMap</td>
+</tr>
+<tr>
+<td>threshold: 12</td>
+</tr>
+<tr>
+<td>modCount: 4</td>
+</tr>
+<tr>
+<td>size: 4</td>
+</tr>
+<tr>
+<td>loadFactor: 0.75</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+<td port="f12"></td>
+<td port="f13"></td>
+<td port="f14"></td>
+<td port="f15"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 3149078</td>
+</tr>
+<tr>
+<td>key: four</td>
+</tr>
+<tr>
+<td>value: 4</td>
+</tr>
+</table>
+>];
+n2:f6 -> n3[label="6",fontsize=12];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 110183</td>
+</tr>
+<tr>
+<td>key: one</td>
+</tr>
+<tr>
+<td>value: 1</td>
+</tr>
+</table>
+>];
+n2:f7 -> n4[label="7",fontsize=12];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 115277</td>
+</tr>
+<tr>
+<td>key: two</td>
+</tr>
+<tr>
+<td>value: 2</td>
+</tr>
+</table>
+>];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 110338829</td>
+</tr>
+<tr>
+<td>key: three</td>
+</tr>
+<tr>
+<td>value: 3</td>
+</tr>
+</table>
+>];
+n5 -> n6[label="next",fontsize=12];
+n2:f13 -> n5[label="13",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+--
+
+== Неувядающая классика: коллизии
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='5'>HashMap</td>
+</tr>
+<tr>
+<td>threshold: 12</td>
+</tr>
+<tr>
+<td>modCount: 6</td>
+</tr>
+<tr>
+<td>size: 6</td>
+</tr>
+<tr>
+<td>loadFactor: 0.75</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+<td port="f12"></td>
+<td port="f13"></td>
+<td port="f14"></td>
+<td port="f15"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: Aaaaaaa</td>
+</tr>
+</table>
+>];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaaabB</td>
+</tr>
+</table>
+>];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaabBa</td>
+</tr>
+</table>
+>];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBaa</td>
+</tr>
+</table>
+>];
+n7[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBbB</td>
+</tr>
+</table>
+>];
+n8[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBaaa</td>
+</tr>
+</table>
+>];
+n7 -> n8[label="next",fontsize=12,constraint=false,color=green];
+n6 -> n7[label="next",fontsize=12,constraint=false,color=green];
+n5 -> n6[label="next",fontsize=12,constraint=false,color=green];
+n4 -> n5[label="next",fontsize=12,constraint=false,color=green];
+n3 -> n4[label="next",fontsize=12,constraint=false,color=green];
+n2:f14 -> n3[label="14",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+
+--
+
+== Неувядающая классика: treeification
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='5'>HashMap</td>
+</tr>
+<tr>
+<td>threshold: 48</td>
+</tr>
+<tr>
+<td>modCount: 11</td>
+</tr>
+<tr>
+<td>size: 11</td>
+</tr>
+<tr>
+<td>loadFactor: 0.75</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+<td port="f12"></td>
+<td port="f13"></td>
+<td port="f14"></td>
+<td port="f15"></td>
+<td port="f16"></td>
+<td port="f17"></td>
+<td port="f18"></td>
+<td port="f19"></td>
+<td port="f20"></td>
+<td port="f21"></td>
+<td port="f22"></td>
+<td port="f23"></td>
+<td port="f24"></td>
+<td port="f25"></td>
+<td port="f26"></td>
+<td port="f27"></td>
+<td port="f28"></td>
+<td port="f29"></td>
+<td port="f30"></td>
+<td port="f31"></td>
+<td port="f32"></td>
+<td port="f33"></td>
+<td port="f34"></td>
+<td port="f35"></td>
+<td port="f36"></td>
+<td port="f37"></td>
+<td port="f38"></td>
+<td port="f39"></td>
+<td port="f40"></td>
+<td port="f41"></td>
+<td port="f42"></td>
+<td port="f43"></td>
+<td port="f44"></td>
+<td port="f45"></td>
+<td port="f46"></td>
+<td port="f47"></td>
+<td port="f48"></td>
+<td port="f49"></td>
+<td port="f50"></td>
+<td port="f51"></td>
+<td port="f52"></td>
+<td port="f53"></td>
+<td port="f54"></td>
+<td port="f55"></td>
+<td port="f56"></td>
+<td port="f57"></td>
+<td port="f58"></td>
+<td port="f59"></td>
+<td port="f60"></td>
+<td port="f61"></td>
+<td port="f62"></td>
+<td port="f63"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBaa</td>
+</tr>
+</table>
+>,color=black];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaaabB</td>
+</tr>
+</table>
+>,color=black];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: Aaaaaaa</td>
+</tr>
+</table>
+>,color=black];
+n5 -> n3[label="prev",fontsize=12,constraint=false,color=green];
+n5 -> n4[label="parent",fontsize=12];
+n5 -> n4[label="next",fontsize=12,constraint=false,color=green];
+n4 -> n5[label="left",fontsize=12];
+n4 -> n5[label="prev",fontsize=12,constraint=false,color=green];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaabBa</td>
+</tr>
+</table>
+>,color=black];
+n6 -> n4[label="prev",fontsize=12,constraint=false,color=green];
+n6 -> n4[label="parent",fontsize=12];
+n7[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBbB</td>
+</tr>
+</table>
+>,color=black];
+n7 -> n6[label="prev",fontsize=12,constraint=false,color=green];
+n8[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBaaa</td>
+</tr>
+</table>
+>,color=black];
+n8 -> n7[label="left",fontsize=12];
+n8 -> n7[label="prev",fontsize=12,constraint=false,color=green];
+n9[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBbBa</td>
+</tr>
+</table>
+>,color=red];
+n10[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBabB</td>
+</tr>
+</table>
+>,color=black];
+n10 -> n8[label="prev",fontsize=12,constraint=false,color=green];
+n10 -> n9[label="parent",fontsize=12];
+n10 -> n9[label="next",fontsize=12,constraint=false,color=green];
+n9 -> n10[label="left",fontsize=12];
+n9 -> n10[label="prev",fontsize=12,constraint=false,color=green];
+n11[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AbBaabB</td>
+</tr>
+</table>
+>,color=black];
+n12[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AbBaaaa</td>
+</tr>
+</table>
+>,color=red];
+n12 -> n9[label="prev",fontsize=12,constraint=false,color=green];
+n12 -> n11[label="parent",fontsize=12];
+n12 -> n11[label="next",fontsize=12,constraint=false,color=green];
+n11 -> n12[label="left",fontsize=12];
+n11 -> n12[label="prev",fontsize=12,constraint=false,color=green];
+n13[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AbBabBa</td>
+</tr>
+</table>
+>,color=red];
+n13 -> n11[label="prev",fontsize=12,constraint=false,color=green];
+n13 -> n11[label="parent",fontsize=12];
+n11 -> n13[label="right",fontsize=12];
+n11 -> n9[label="parent",fontsize=12];
+n11 -> n13[label="next",fontsize=12,constraint=false,color=green];
+n9 -> n11[label="right",fontsize=12];
+n9 -> n8[label="parent",fontsize=12];
+n9 -> n12[label="next",fontsize=12,constraint=false,color=green];
+n8 -> n9[label="right",fontsize=12];
+n8 -> n3[label="parent",fontsize=12];
+n8 -> n10[label="next",fontsize=12,constraint=false,color=green];
+n7 -> n8[label="parent",fontsize=12];
+n7 -> n8[label="next",fontsize=12,constraint=false,color=green];
+n6 -> n7[label="next",fontsize=12,constraint=false,color=green];
+n4 -> n6[label="right",fontsize=12];
+n4 -> n3[label="parent",fontsize=12];
+n4 -> n6[label="next",fontsize=12,constraint=false,color=green];
+n3 -> n4[label="left",fontsize=12];
+n3 -> n8[label="right",fontsize=12];
+n3 -> n5[label="next",fontsize=12,constraint=false,color=green];
+n2:f30 -> n3[label="30",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+--
+
+== Произведите впечатление на интервьюера
+
+Расскажите о MapN и linear probing vs chaining
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+graph [ dpi = 120 ];
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>MapN</td>
+</tr>
+<tr>
+<td>size: 3</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>String</td>
+</tr>
+<tr>
+<td>hash: 96321</td>
+</tr>
+<tr>
+<td>coder: 0</td>
+</tr>
+</table>
+>];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td>97</td>
+<td>97</td>
+<td>97</td>
+</tr>
+</table>
+>];
+n3 -> n4[label="value",fontsize=12];
+n2:f6 -> n3[label="6",fontsize=12];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Integer</td>
+</tr>
+<tr>
+<td>value: 1</td>
+</tr>
+</table>
+>];
+n2:f7 -> n5[label="7",fontsize=12];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>String</td>
+</tr>
+<tr>
+<td>hash: 96321</td>
+</tr>
+<tr>
+<td>coder: 0</td>
+</tr>
+</table>
+>];
+n7[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td>97</td>
+<td>98</td>
+<td>66</td>
+</tr>
+</table>
+>];
+n6 -> n7[label="value",fontsize=12];
+n2:f8 -> n6[label="8",fontsize=12];
+n8[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Integer</td>
+</tr>
+<tr>
+<td>value: 2</td>
+</tr>
+</table>
+>];
+n2:f9 -> n8[label="9",fontsize=12];
+n9[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>String</td>
+</tr>
+<tr>
+<td>hash: 96321</td>
+</tr>
+<tr>
+<td>coder: 0</td>
+</tr>
+</table>
+>];
+n10[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td>98</td>
+<td>66</td>
+<td>97</td>
+</tr>
+</table>
+>];
+n9 -> n10[label="value",fontsize=12];
+n2:f10 -> n9[label="10",fontsize=12];
+n11[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Integer</td>
+</tr>
+<tr>
+<td>value: 3</td>
+</tr>
+</table>
+>];
+n2:f11 -> n11[label="11",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+--
+
+== Задачи на алгоритмы
+
+* "Реализуйте свой кэш" и прочие задачи на алгоритмы -- out of scope of this presentation
+* Но к слову о кэшах:
+** `LinkedHashMap` -- готовый LRU кэш
+** Guava cache
+
+== Streams & Optionals
+
+* Умеем пользоваться стримами:
+** породить стрим перечислением элементов, из коллекции, конкатенацией других стримов...
+** фильтровать `filter`, `limit`/`takeWhile`, `skip`/`dropWhile`, `distinct`
+** преобразовать `map`/`flatMap`
+** выполнить терминальную операцию
+
+== Терминальные операции
+
+* `findAny` / `findFirst` (где разница?)
+* `anyMatch` / `allMatch` / `noneMatch`
+* `reduce` with identity / without identity
+* Collectors API: большая и сложная тема
+
+== Группировки
+
+[graphviz, "groupby.png"]
+----
+digraph G {
+graph [ dpi = 150 ];
+node[shape="record"]
+
+map[label="<f0>FISH|<f1>MEAT|<f2>OTHER"];
+
+flist[label="{salmon|prawns}"];
+mlist[label="{pork|beef|chicken}"];
+olist[label="{pizza|rice|fruit|french fries}"];
+map:f0->flist;
+map:f1->mlist;
+map:f2->olist;
+
+}
+----
+[source,java]
+----
+Map<Dish.Type, List<Dish>> dishesByType =
+  menu.stream().collect(Collectors.groupingBy(Dish::getType));
+----
+
+== Downstream Collectors
+[graphviz, "groupbyby.png"]
+----
+digraph G {
+graph [ dpi = 150 ];
+node[shape="record"]
+
+map[label="<f0>FISH|<f1>MEAT|<f2>OTHER"];
+
+fmap[label="<f0>NORMAL|<f1>DIET"];
+
+mmap[label="<f0>FAT|<f1>NORMAL|<f2>DIET"];
+
+omap[label="<f0>NORMAL|<f1>DIET"];
+
+olist1[label="{pizza|french fries}"];
+olist2[label="{fruit|rice}"];
+
+map:f0->fmap;
+map:f1->mmap;
+map:f2->omap;
+
+fmap:f0->salmon;
+fmap:f1->prawns;
+
+mmap:f0->pork;
+mmap:f1->beef;
+mmap:f2->chicken;
+
+omap:f0->olist1;
+omap:f1->olist2;
+
+}
+----
+
+[source,java]
+----
+Map<Dish.Type, Map<Dish.CaloricLevel, List<Dish>>>
+  dishesByTypeAndCaloricLevel =
+    menu.stream().collect(Collectors
+      .groupingBy(Dish::getType,
+         Collectors.groupingBy(Dish::getCaloricLevel)));
+----
+
+== Но мы можем не только группировать в цепочке!
+
+[graphviz, "groupbyandcount.png"]
+----
+digraph G {
+graph [ dpi = 150 ];
+
+map[shape="record";label="<f0>FISH|<f1>MEAT|<f2>OTHER"];
+
+flist[label="2"];
+mlist[label="3"];
+olist[label="4"];
+map:f0->flist;
+map:f1->mlist;
+map:f2->olist;
+
+}
+----
+
+[source,java]
+----
+Map<Dish.Type, Long> typesCount =
+  menu.stream().collect(Collectors
+    .groupingBy(Dish::getType, Collectors.counting()));
+----
+
+== Знаем и умеем применять класс Optional
+
+* Стрим из 0 или 1 элемента
+* Заменяет nullable-значения
+* Применяется в современных API как возвращаемое значение
+* Всё ещё не решает проблему null safety в Java
+
+== Декларативный Comparator
+
+* Дан класс `Person` со свойствами `getFirstName()`, `getLastName()`. Как вы отсортируете `List<Person>` в алфавитном порядке по фамилии (если фамилия совпадает, то по имени)?
+
+[.fragment]
+[source,java]
+----
+Collections.sort(people,
+  Comparator
+    .comparing(Person::getLastName)
+    .thenComparing(Person::getFirstName));
+);
+----
+
+== Как улучшить свои знания?
+
+* Лекция Streams API, Optionals: https://www.youtube.com/watch?v=NMQ_z8Wlrbw
+
+* Тагир Валеев:  Используйте Stream API проще (или не используйте вообще) https://habr.com/ru/articles/337350/
+
+* Тагир Валеев: Причуды Stream API https://www.youtube.com/watch?v=1_Zj3gS_a3E
 
 
 == Thanks for listening!

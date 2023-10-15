@@ -27,28 +27,48 @@ include::_doc_general_attributes.adoc[]
 //== Часть 1. Введение
 :!figure-caption:
 
-[%notitle]
-== Who am I
-
-[cols="30a,70a"]
-|===
-|image::ivan.jpg[]
-|
-
-Ivan Ponomarev
-
-* Staff Engineer @ Synthesized.io
-* Teaching @ МФТИ and London Northeastern University
+== JDBC и базы данных
 
 
-|===
 
-== Лекция 2
 
-[%step]
-* Раз
-* Два
-* Три
+== Java Concurrency
+
+Что такое Java memory model?
+
+Правила JMM
+
+семантика volatile
+семантика lock acquire-release
+семантика synchronized
+
+как работает wait-notify (пример)
+
+deadlock. Чего делать если случился?
+
+блокирующие / неблокирующие структуры данных
+
+
+
+Ленивый потокобезопасный синглетон
+
+Thread pooling. Можем ли мы создать 2000 тредов?
+
+Как обрабатывать завершение (cooperative termination)
+
+== Spring
+
+Что такое бины
+как работает DI
+
+"чуда не случилось"
+
+Скоупы бинов
+как работать с бинами с разным жизненным циклом
+AOP -- прокси. Self-injecting
+
+== Логирование в Java
+
 
 
 
