@@ -27,49 +27,1621 @@ include::_doc_general_attributes.adoc[]
 //== Часть 1. Введение
 :!figure-caption:
 
+== Интерфейсы коллекций: некоторые реализации Map
+
+[plantuml, colintf, png]
+----
+@startuml
+
+skinparam dpi 150
+
+interface Map<K,V> {
+V get(Object key)
+V put(K key, V value)
+V remove(Object key)
+void clear()
+...
+--default methods--
+V getOrDefault(Object key, V defaultValue)
+default V putIfAbsent(K key, V value)
+...
+}
+
+interface NavigableMap<K,V> {
+K lowerKey(K key);
+K floorKey(K key);
+K ceilingKey(K key);
+K higherKey(K key);
+--
+...
+}
+
+class HashMap<K,V>
+class LinkedHashMap<K,V>
+class TreeMap<K,V>
+class IdentityHashMap<K,V>
+class ConcurrentSkipListMap<K,V>
+class EmptyMap<K,V>
+class MapN<K,V>
+class EnumMap<K extends Enum<K>,V>
+class ConcurrentHashMap<K,V>
+
+Map <|.. TreeMap
+Map <|.... EmptyMap
+Map <|.. HashMap
+Map <|.... ConcurrentHashMap
+Map <|.... WeakHashMap
+Map <|.... MapN
+Map <|.. LinkedHashMap
+Map <|.... EnumMap
+Map <|.. IdentityHashMap
+Map <|.. ConcurrentSkipListMap
+
+Map <|- NavigableMap
+
+NavigableMap <|.. TreeMap
+NavigableMap <|.. ConcurrentSkipListMap
+
+@enduml
+----
+
+== Вопросы
+
+1. Когда какая из этих мап нужна?
+2. Как устроена каждая из мап?
+3. Могут ли мутабельные объекты служить ключами мапы?
+4. Какова асимптотическая сложность доступа к элементу той или иной мапы?
+
+== Неувядающая классика: как работает HashMap?
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+graph [ dpi = 130 ];
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='5'>HashMap</td>
+</tr>
+<tr>
+<td>threshold: 12</td>
+</tr>
+<tr>
+<td>modCount: 4</td>
+</tr>
+<tr>
+<td>size: 4</td>
+</tr>
+<tr>
+<td>loadFactor: 0.75</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+<td port="f12"></td>
+<td port="f13"></td>
+<td port="f14"></td>
+<td port="f15"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 3149078</td>
+</tr>
+<tr>
+<td>key: four</td>
+</tr>
+<tr>
+<td>value: 4</td>
+</tr>
+</table>
+>];
+n2:f6 -> n3[label="6",fontsize=12];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 110183</td>
+</tr>
+<tr>
+<td>key: one</td>
+</tr>
+<tr>
+<td>value: 1</td>
+</tr>
+</table>
+>];
+n2:f7 -> n4[label="7",fontsize=12];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 115277</td>
+</tr>
+<tr>
+<td>key: two</td>
+</tr>
+<tr>
+<td>value: 2</td>
+</tr>
+</table>
+>];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='4'>Node</td>
+</tr>
+<tr>
+<td>hash: 110338829</td>
+</tr>
+<tr>
+<td>key: three</td>
+</tr>
+<tr>
+<td>value: 3</td>
+</tr>
+</table>
+>];
+n5 -> n6[label="next",fontsize=12];
+n2:f13 -> n5[label="13",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+--
+
+== Неувядающая классика: коллизии
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='5'>HashMap</td>
+</tr>
+<tr>
+<td>threshold: 12</td>
+</tr>
+<tr>
+<td>modCount: 6</td>
+</tr>
+<tr>
+<td>size: 6</td>
+</tr>
+<tr>
+<td>loadFactor: 0.75</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+<td port="f12"></td>
+<td port="f13"></td>
+<td port="f14"></td>
+<td port="f15"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: Aaaaaaa</td>
+</tr>
+</table>
+>];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaaabB</td>
+</tr>
+</table>
+>];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaabBa</td>
+</tr>
+</table>
+>];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBaa</td>
+</tr>
+</table>
+>];
+n7[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBbB</td>
+</tr>
+</table>
+>];
+n8[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>Node</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBaaa</td>
+</tr>
+</table>
+>];
+n7 -> n8[label="next",fontsize=12,constraint=false,color=green];
+n6 -> n7[label="next",fontsize=12,constraint=false,color=green];
+n5 -> n6[label="next",fontsize=12,constraint=false,color=green];
+n4 -> n5[label="next",fontsize=12,constraint=false,color=green];
+n3 -> n4[label="next",fontsize=12,constraint=false,color=green];
+n2:f14 -> n3[label="14",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+
+--
+
+== Неувядающая классика: treeification
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='5'>HashMap</td>
+</tr>
+<tr>
+<td>threshold: 48</td>
+</tr>
+<tr>
+<td>modCount: 11</td>
+</tr>
+<tr>
+<td>size: 11</td>
+</tr>
+<tr>
+<td>loadFactor: 0.75</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+<td port="f12"></td>
+<td port="f13"></td>
+<td port="f14"></td>
+<td port="f15"></td>
+<td port="f16"></td>
+<td port="f17"></td>
+<td port="f18"></td>
+<td port="f19"></td>
+<td port="f20"></td>
+<td port="f21"></td>
+<td port="f22"></td>
+<td port="f23"></td>
+<td port="f24"></td>
+<td port="f25"></td>
+<td port="f26"></td>
+<td port="f27"></td>
+<td port="f28"></td>
+<td port="f29"></td>
+<td port="f30"></td>
+<td port="f31"></td>
+<td port="f32"></td>
+<td port="f33"></td>
+<td port="f34"></td>
+<td port="f35"></td>
+<td port="f36"></td>
+<td port="f37"></td>
+<td port="f38"></td>
+<td port="f39"></td>
+<td port="f40"></td>
+<td port="f41"></td>
+<td port="f42"></td>
+<td port="f43"></td>
+<td port="f44"></td>
+<td port="f45"></td>
+<td port="f46"></td>
+<td port="f47"></td>
+<td port="f48"></td>
+<td port="f49"></td>
+<td port="f50"></td>
+<td port="f51"></td>
+<td port="f52"></td>
+<td port="f53"></td>
+<td port="f54"></td>
+<td port="f55"></td>
+<td port="f56"></td>
+<td port="f57"></td>
+<td port="f58"></td>
+<td port="f59"></td>
+<td port="f60"></td>
+<td port="f61"></td>
+<td port="f62"></td>
+<td port="f63"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBaa</td>
+</tr>
+</table>
+>,color=black];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaaabB</td>
+</tr>
+</table>
+>,color=black];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: Aaaaaaa</td>
+</tr>
+</table>
+>,color=black];
+n5 -> n3[label="prev",fontsize=12,constraint=false,color=green];
+n5 -> n4[label="parent",fontsize=12];
+n5 -> n4[label="next",fontsize=12,constraint=false,color=green];
+n4 -> n5[label="left",fontsize=12];
+n4 -> n5[label="prev",fontsize=12,constraint=false,color=green];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaaabBa</td>
+</tr>
+</table>
+>,color=black];
+n6 -> n4[label="prev",fontsize=12,constraint=false,color=green];
+n6 -> n4[label="parent",fontsize=12];
+n7[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AaabBbB</td>
+</tr>
+</table>
+>,color=black];
+n7 -> n6[label="prev",fontsize=12,constraint=false,color=green];
+n8[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBaaa</td>
+</tr>
+</table>
+>,color=black];
+n8 -> n7[label="left",fontsize=12];
+n8 -> n7[label="prev",fontsize=12,constraint=false,color=green];
+n9[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBbBa</td>
+</tr>
+</table>
+>,color=red];
+n10[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AabBabB</td>
+</tr>
+</table>
+>,color=black];
+n10 -> n8[label="prev",fontsize=12,constraint=false,color=green];
+n10 -> n9[label="parent",fontsize=12];
+n10 -> n9[label="next",fontsize=12,constraint=false,color=green];
+n9 -> n10[label="left",fontsize=12];
+n9 -> n10[label="prev",fontsize=12,constraint=false,color=green];
+n11[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AbBaabB</td>
+</tr>
+</table>
+>,color=black];
+n12[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AbBaaaa</td>
+</tr>
+</table>
+>,color=red];
+n12 -> n9[label="prev",fontsize=12,constraint=false,color=green];
+n12 -> n11[label="parent",fontsize=12];
+n12 -> n11[label="next",fontsize=12,constraint=false,color=green];
+n11 -> n12[label="left",fontsize=12];
+n11 -> n12[label="prev",fontsize=12,constraint=false,color=green];
+n13[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>TreeNode</td>
+</tr>
+<tr>
+<td>hash: 427789982</td>
+</tr>
+<tr>
+<td>key: AbBabBa</td>
+</tr>
+</table>
+>,color=red];
+n13 -> n11[label="prev",fontsize=12,constraint=false,color=green];
+n13 -> n11[label="parent",fontsize=12];
+n11 -> n13[label="right",fontsize=12];
+n11 -> n9[label="parent",fontsize=12];
+n11 -> n13[label="next",fontsize=12,constraint=false,color=green];
+n9 -> n11[label="right",fontsize=12];
+n9 -> n8[label="parent",fontsize=12];
+n9 -> n12[label="next",fontsize=12,constraint=false,color=green];
+n8 -> n9[label="right",fontsize=12];
+n8 -> n3[label="parent",fontsize=12];
+n8 -> n10[label="next",fontsize=12,constraint=false,color=green];
+n7 -> n8[label="parent",fontsize=12];
+n7 -> n8[label="next",fontsize=12,constraint=false,color=green];
+n6 -> n7[label="next",fontsize=12,constraint=false,color=green];
+n4 -> n6[label="right",fontsize=12];
+n4 -> n3[label="parent",fontsize=12];
+n4 -> n6[label="next",fontsize=12,constraint=false,color=green];
+n3 -> n4[label="left",fontsize=12];
+n3 -> n8[label="right",fontsize=12];
+n3 -> n5[label="next",fontsize=12,constraint=false,color=green];
+n2:f30 -> n3[label="30",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+--
+
+== Произведите впечатление на интервьюера
+
+Расскажите о MapN и linear probing vs chaining
+
+[graphviz]
+--
+digraph Java {
+rankdir="TB";
+graph [ dpi = 120 ];
+node[shape=plaintext]
+n1[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>MapN</td>
+</tr>
+<tr>
+<td>size: 3</td>
+</tr>
+</table>
+>];
+n2[label=<
+<table border='0' cellborder='1' cellspacing='0' cellpadding='9'>
+<tr>
+<td port="f0"></td>
+<td port="f1"></td>
+<td port="f2"></td>
+<td port="f3"></td>
+<td port="f4"></td>
+<td port="f5"></td>
+<td port="f6"></td>
+<td port="f7"></td>
+<td port="f8"></td>
+<td port="f9"></td>
+<td port="f10"></td>
+<td port="f11"></td>
+</tr>
+</table>
+>];
+n3[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>String</td>
+</tr>
+<tr>
+<td>hash: 96321</td>
+</tr>
+<tr>
+<td>coder: 0</td>
+</tr>
+</table>
+>];
+n4[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td>97</td>
+<td>97</td>
+<td>97</td>
+</tr>
+</table>
+>];
+n3 -> n4[label="value",fontsize=12];
+n2:f6 -> n3[label="6",fontsize=12];
+n5[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Integer</td>
+</tr>
+<tr>
+<td>value: 1</td>
+</tr>
+</table>
+>];
+n2:f7 -> n5[label="7",fontsize=12];
+n6[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>String</td>
+</tr>
+<tr>
+<td>hash: 96321</td>
+</tr>
+<tr>
+<td>coder: 0</td>
+</tr>
+</table>
+>];
+n7[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td>97</td>
+<td>98</td>
+<td>66</td>
+</tr>
+</table>
+>];
+n6 -> n7[label="value",fontsize=12];
+n2:f8 -> n6[label="8",fontsize=12];
+n8[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Integer</td>
+</tr>
+<tr>
+<td>value: 2</td>
+</tr>
+</table>
+>];
+n2:f9 -> n8[label="9",fontsize=12];
+n9[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='3'>String</td>
+</tr>
+<tr>
+<td>hash: 96321</td>
+</tr>
+<tr>
+<td>coder: 0</td>
+</tr>
+</table>
+>];
+n10[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td>98</td>
+<td>66</td>
+<td>97</td>
+</tr>
+</table>
+>];
+n9 -> n10[label="value",fontsize=12];
+n2:f10 -> n9[label="10",fontsize=12];
+n11[label=<
+<table border='0' cellborder='1' cellspacing='0'>
+<tr>
+<td rowspan='2'>Integer</td>
+</tr>
+<tr>
+<td>value: 3</td>
+</tr>
+</table>
+>];
+n2:f11 -> n11[label="11",fontsize=12];
+n1 -> n2[label="table",fontsize=12];
+}
+--
+
+== Задачи на алгоритмы
+
+* "Реализуйте свой кэш" и прочие задачи на алгоритмы -- out of scope of this presentation
+* Но к слову о кэшах:
+** `LinkedHashMap` -- готовый LRU кэш
+** Guava cache
+
+== Streams & Optionals
+
+* Умеем пользоваться стримами:
+** породить стрим перечислением элементов, из коллекции, конкатенацией других стримов...
+** фильтровать `filter`, `limit`/`takeWhile`, `skip`/`dropWhile`, `distinct`
+** преобразовать `map`/`flatMap`
+** выполнить терминальную операцию
+
+== Терминальные операции
+
+* `findAny` / `findFirst` (где разница?)
+* `anyMatch` / `allMatch` / `noneMatch`
+* `reduce` with identity / without identity
+* Collectors API: большая и сложная тема
+
+== Группировки
+
+[graphviz, "groupby.png"]
+----
+digraph G {
+graph [ dpi = 150 ];
+node[shape="record"]
+
+map[label="<f0>FISH|<f1>MEAT|<f2>OTHER"];
+
+flist[label="{salmon|prawns}"];
+mlist[label="{pork|beef|chicken}"];
+olist[label="{pizza|rice|fruit|french fries}"];
+map:f0->flist;
+map:f1->mlist;
+map:f2->olist;
+
+}
+----
+[source,java]
+----
+Map<Dish.Type, List<Dish>> dishesByType =
+  menu.stream().collect(Collectors.groupingBy(Dish::getType));
+----
+
+== Downstream Collectors
+[graphviz, "groupbyby.png"]
+----
+digraph G {
+graph [ dpi = 150 ];
+node[shape="record"]
+
+map[label="<f0>FISH|<f1>MEAT|<f2>OTHER"];
+
+fmap[label="<f0>NORMAL|<f1>DIET"];
+
+mmap[label="<f0>FAT|<f1>NORMAL|<f2>DIET"];
+
+omap[label="<f0>NORMAL|<f1>DIET"];
+
+olist1[label="{pizza|french fries}"];
+olist2[label="{fruit|rice}"];
+
+map:f0->fmap;
+map:f1->mmap;
+map:f2->omap;
+
+fmap:f0->salmon;
+fmap:f1->prawns;
+
+mmap:f0->pork;
+mmap:f1->beef;
+mmap:f2->chicken;
+
+omap:f0->olist1;
+omap:f1->olist2;
+
+}
+----
+
+[source,java]
+----
+Map<Dish.Type, Map<Dish.CaloricLevel, List<Dish>>>
+  dishesByTypeAndCaloricLevel =
+    menu.stream().collect(Collectors
+      .groupingBy(Dish::getType,
+         Collectors.groupingBy(Dish::getCaloricLevel)));
+----
+
+== Но мы можем не только группировать в цепочке!
+
+[graphviz, "groupbyandcount.png"]
+----
+digraph G {
+graph [ dpi = 150 ];
+
+map[shape="record";label="<f0>FISH|<f1>MEAT|<f2>OTHER"];
+
+flist[label="2"];
+mlist[label="3"];
+olist[label="4"];
+map:f0->flist;
+map:f1->mlist;
+map:f2->olist;
+
+}
+----
+
+[source,java]
+----
+Map<Dish.Type, Long> typesCount =
+  menu.stream().collect(Collectors
+    .groupingBy(Dish::getType, Collectors.counting()));
+----
+
+== Знаем и умеем применять класс Optional
+
+* Стрим из 0 или 1 элемента
+* Заменяет nullable-значения
+* Применяется в современных API как возвращаемое значение
+* Всё ещё не решает проблему null safety в Java
+
+== Декларативный Comparator
+
+* Дан класс `Person` со свойствами `getFirstName()`, `getLastName()`. Как вы отсортируете `List<Person>` в алфавитном порядке по фамилии (если фамилия совпадает, то по имени)?
+
+[.fragment]
+[source,java]
+----
+Collections.sort(people,
+  Comparator
+    .comparing(Person::getLastName)
+    .thenComparing(Person::getFirstName));
+);
+----
+
+== Как улучшить свои знания?
+
+* Лекция Streams API, Optionals: https://www.youtube.com/watch?v=NMQ_z8Wlrbw
+
+* Тагир Валеев:  Используйте Stream API проще (или не используйте вообще) https://habr.com/ru/articles/337350/
+
+* Тагир Валеев: Причуды Stream API https://www.youtube.com/watch?v=1_Zj3gS_a3E
+
 == JDBC и базы данных
 
+К сожалению, раскрыть это тему не успеваем
+
+* SQL надо знать, хотя бы базово с реляционными базами надо уметь обходиться
+* знание JDBC + какой-нибудь прослойки типа Spring JDBC, jOOQ, JPA часто бывает необходимым требованием
+
+== Concurrency
+
+* Базовое понимание, что такое тред.
+* Можем ли мы создать 2000 тредов? Почему?
+
+== Вопросы по Concurrency
+
+* Что такое Java memory model?
+
+* Правила JMM
+* Как пользоваться volatile?
+* Как пользоваться synchronized?
+* lock acquire-release, wait-notify
+
+== Модель памяти
+
+[source,java]
+----
+int aVariable = 42;
+----
+
+* Модель памяти (Java Memory Model, JMM) -- спецификация языка и виртуальной машины, отвечающая на вопрос: «при каких условиях поток, читающий переменную `aVariable`, увидит значение 42?»
+
+== Happens-before
+
+* JMM определяет частичный порядок на всех действиях в Java-программе, называемый _happens-before_.
+
+* Отношение _happens-before_ транзитивно: stem:[A \prec B \wedge B \prec C \Rightarrow A \prec C]
+
+* Однако не про всякую пару A и B можно сказать, что stem:[A \prec B] или stem:[B \prec A] -- т. е. порядок по happens-before _частичный_
+
+* Чтобы действие B гарантированно видело результат работы действия A, достаточно, чтобы stem:[A \prec B].
+
+== Program order rule
+
+* В рамках одного треда все действия _happens-before_ в порядке их определения в исходном коде программы.
+
+* Иными словами, однопоточные программы выполняются без сюрпризов.
+
+== Thread start & thread termination rule
+
+* Вызов `threadA.start()` _happens-before_ всех операций в потоке `threadA`.
+* Любая операция в потоке `threadA` _happens-before_ обнаружения другим потоком завершения `threadA`, либо путём выхода из `threadA.join()`, либо путём проверки `threadA.isAlive() == false`.
+
+[cols="50a,50a"]
+|===
+
+[source,java]
+----
+class CalcSquare extends Thread {
+  final int argument;
+  int result;
+  CalcSquare(int argument) {
+    this.argument = argument;
+  }
+  @Override
+  public void run() {
+    //«сложные» вычисления
+    result = argument * argument;
+  }
+}
+----
+
+|
+
+[source,java]
+----
+CalcSquare t1 = new CalcSquare(2);
+CalcSquare t2 = new CalcSquare(3);
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+
+System.out.printf("%d, %d%n",
+  t1.result, t2.result);
+/*output: 4, 9 */
+
+----
+
+|===
+
+== Ключевое слово volatile
+
+* Переменные классов могут быть определены с ключевым словом `volatile`.
+
+* *Запись в `volatile`-переменную _happens-before_ чтения из этой переменной в другом потоке.*
 
 
 
-== Java Concurrency
+[source,java]
+----
+class WayToFallAsleep implements Runnable {
+  private volatile boolean asleep;
+  public void setAsleep(boolean asleep){
+    this.asleep = asleep;
+  }
+  @Override
+  public void run() {
+    while (!asleep){
+      //countSomeSheep
+      //...
+    }
+  }
+}
+----
 
-Что такое Java memory model?
+== Чтение volatile-переменной
 
-Правила JMM
-
-семантика volatile
-семантика lock acquire-release
-семантика synchronized
-
-как работает wait-notify (пример)
-
-deadlock. Чего делать если случился?
-
-блокирующие / неблокирующие структуры данных
+* Чтение одной лишь volatile-переменной автоматом делает видимыми изменения в других переменных. Полагаться на это не рекомендуется: это работает, но делает код хрупким. В процессе рефакторинга можно поменять порядок доступа к переменным и тем самым незаметно поломать программу.
 
 
+== JMM Monitor Lock Rule
 
-Ленивый потокобезопасный синглетон
+* Разблокировка (unlocking) _happens-before_ другой блокировки (locking) того же самого «замка» (lock).
+* Поэтому защищённые блокировкой переменные объявлять как `volatile` уже не нужно.
 
-Thread pooling. Можем ли мы создать 2000 тредов?
+== Condition Objects: неувядающая классика собеседований
 
-Как обрабатывать завершение (cooperative termination)
+[source,java]
+----
+private ReentrantLock bankLock = new ReentrantLock();
+private Condition sufficientFunds = bankLock.newCondition();
+
+void moneyTransfer(int from, int to, int amount) {
+  bankLock.lock();
+  try {
+    while (accounts[from] < amount)
+      sufficientFunds.await();
+
+    accounts[from]-=amount;
+    accounts[to]+=amount;
+
+    sufficientFunds.signalAll();
+  } finally {
+    bankLock.unlock();
+  }
+}
+----
+== Condition Objects: что происходит?
+
+* `await()` отпускает блокировку и переводит тред в ждущее состояние,
+* `signalAll()` сигнализирует всем ждущим тредам, что что-то поменялось,
+* выход из `await()` _снова захватывает блокировку_.
+* При выходе из `await()` мы вновь проверяем условие, потому что:
+** сигнал мог быть по другому поводу,
+** возможны «спонтанные пробуждения».
+
+== Контрольный вопрос
+
+* Чем гарантировано, что при выходе из `await()` мы увидим изменения, сделанные другим тредом?
+
+[.fragment]
+* При выходе из `await()` мы снова захватываем блокировку, работает JMM Monitor Lock Rule.
+
+== Правильный паттерн ожидания condition
+[source,java]
+----
+while (!okToProceed())
+  condition.await();
+----
+== Intrinsic lock
+
+* Начиная с Java 1.0, каждый объект имеет встроенный (intrinsic) lock.
+* У каждого intrinsic lock есть один condition.
+
+== То же самое, с помощью intrinsic lock
+[source,java]
+----
+//enter intrinsic lock on *this*
+synchronized void moneyTransfer(int from, int to, int amount) {
+    while (accounts[from] < amount)
+      wait(); //wait on intrinsic object's lock condition
+
+    accounts[from]-=amount;
+    accounts[to]+=amount;
+
+    notifyAll(); //notify all threads waiting on the condition
+}
+----
+
+== Intrinsic conditions
+* Нужно работать по строгому паттерну:
+** синхронизация,
+** while-loop wait,
+** нотификация.
+* Нужно держать в уме:
+** по intrinsic lock какого объекта синхронизируемся,
+** по condition какого объекта ждём,
+** треды, ждущие на condition какого объекта нотифицируем (это всё должен быть один объект).
+* В общем, это низкоуровневый и сложный механизм. Его понимание пригодится на собеседованиях, но скорее всего, вам не надо будет им пользоваться.
+
+== "Простые" правила работы с Concurrency
+
+* Где возможно, используйте immutable state: он автоматически потокобезопасен.
+* Используйте volatile переменные ИЛИ синхронизацию для доступа к mutable state.
+* Удерживайте блокировку во время выполнения операций, которые должны быть атомарными.
+* *Программа с shared mutable state без должной синхронизации -- сломанная программа*, даже если "это работает на моей машине".
+* Понимание JMM помогает
+
+== Deadlocks
+
+* Объясните что такое дедлок и мы наймём вас.
+
+[.fragment]
+Наймите меня, и я объясню вам, что такое дедлок.
+
+== Deadlocks
+
+* jstack
+* порядок блокировки
+* если у вас всего один лок, у вас не будет дедлока :-)
+
+== Блокирующие / неблокирующие структуры данных
+
+* lock contention
+* CAS операции
+* классы атомарных переменных и потокобезопасные коллекции, реализованные в том числе на неблокирующих алгоритмах
+
+== Также нужно знать про
+
+* Тред пулы (Executor Framework)
+* CompletableFuture
+* Кооперативный механизм прерывания (в частности, что делать с `InterruptedException`)
+
+== Синглетоноварение: подход №1
+
+[source,java]
+----
+public class Singleton {
+  //Создание Singleton "спрятано"
+  private static final Singleton instance = new Singleton();
+
+  public static Singleton getInstance() {
+    return instance;
+  }
+
+  //Лишаем возможности создать экземпляр объекта "извне"
+  private Singleton(){
+  }
+}
+----
+
+[.fragment]
+"Тяжёлый" объект создаётся всегда, даже если `getInstance` не будет вызван?
+
+== Подход №2
+
+[source,java]
+----
+public class Singleton {
+    private static Singleton instance;
+
+    public static Singleton getInstance() {
+        if (instance == null) {
+           instance = new Singleton();
+        }
+        return instance;
+    }
+    private Singleton(){
+    }
+}
+----
+[.fragment]
+Что с многопоточным доступом к переменной `instance`?
+
+== Подход №3 ?!
+
+[source,java]
+----
+public class Singleton {
+    private static volatile Singleton instance;
+
+    public static Singleton getInstance() {
+        if (instance == null) {
+            instance = new Singleton();
+        }
+        return instance;
+    }
+    private Singleton(){
+    }
+}
+----
+[.fragment]
+Теперь нет гарантии, что экземпляр создаётся только один раз!
+
+
+== Подход №4 ?! ?!
+
+[source,java]
+----
+public class Singleton {
+    private static Singleton instance;
+
+    public static synchronized Singleton getInstance() {
+        if (instance == null) {
+            instance = new Singleton();
+        }
+        return instance;
+    }
+    private Singleton(){
+    }
+}
+----
+[.fragment]
+Все потоки будут выстраиваться в очередь, только чтобы получить доступ к переменной instance?
+
+== Подход №5 ?! ?! ?!
+
+[source,java]
+----
+public class Singleton {
+    private static Singleton instance;
+    private static final Object lock = new Object();
+    public static Singleton getInstance() {
+        if (instance == null)
+            synchronized (lock) {
+                if (instance == null)
+                    instance = new Singleton();
+            }
+        return instance;
+    }
+    private Singleton() {
+    }
+}
+----
+[.fragment]
+Программа сломана. Из-за того, что в первом `if`-е чтение поля `instance` не синхронизировано, возможно чтение частично инициализированного объекта (если конструктор `Singleton` заинлайнен).
+
+== Подход №6 . . .
+
+[source,java]
+----
+public class Singleton {
+    private static volatile Singleton instance;
+    private static final Object lock = new Object();
+    public static Singleton getInstance() {
+        if (instance == null)
+            synchronized (lock) {
+                if (instance == null)
+                    instance = new Singleton();
+            }
+        return instance;
+    }
+    private Singleton() {
+    }
+}
+----
+[.fragment]
+Ну, почти. Только у нас оверхед, потому что два раза читаем `volatile`-переменную.
+
+
+== Подход №7. Код из книги "Effective Java, 3rd edition"
+Joshua Bloch: "On my machine, this method is about 1.4 times as fast as the obvious version without a local variable". [EJ, 3rd ed., pp. 334-335]
+
+[source,java]
+----
+public class Singleton {
+  private static volatile Singleton instance;
+  private static final Object lock = new Object();
+  public static Singleton getInstance() {
+    Singleton result = instance;
+    if (result == null) {
+      synchronized (lock) {
+        if (instance == null)
+          instance = result = new Singleton();
+        }
+     }
+     return result;
+  }
+}
+----
+
+== Подход №7. Код из книги "Effective Java, 3rd edition"
+
+Вы уже видите баг в этом коде? +
+{nbsp}
+
+[source,java]
+----
+public class Singleton {
+  private static volatile Singleton instance;
+  private static final Object lock = new Object();
+  public static Singleton getInstance() {
+    Singleton result = instance;
+    if (result == null) {
+      synchronized (lock) {
+        if (instance == null)
+          instance = result = new Singleton();
+        }
+     }
+     return result;
+  }
+}
+----
+[.fragment]
+Если при входе в `synchronized`-блок `instance != null`, на выходе -- `null`.
+
+== Единственно Верный Ленивый Потокобезопасный Синглетон
+[source,java]
+----
+public class Singleton {
+    private static volatile Singleton instance;
+    private static final Object lock = new Object();
+    public static Singleton getInstance() {
+        Singleton result = instance;
+        if (result != null)
+            return result;
+
+        synchronized (lock) {
+            if (instance == null)
+                instance = new Singleton();
+            return instance;
+        }
+    }
+    private Singleton() {}
+}
+----
+
+[.fragment]
+Или нет?
+
+== Подход №8
+
+[source,java]
+----
+// Correct lazy initialization in Java
+public class Singleton {
+    private static class SingletonHolder {
+       public static final Singleton instance = new Singleton();
+    }
+
+    public static Singleton getInstance() {
+        return SingletonHolder.instance;
+    }
+    private Singleton() {
+    }
+}
+----
+
+== Code Review Checklist: Java Concurrency
+
+* *Roman Leventov*: https://github.com/code-review-checklists/java-concurrency[Code Review Checklist: Java Concurrency]
+
+* Порядка 100 пунктов, по которым можно проверить concurrency код на распространённые ошибки
 
 == Spring
 
-Что такое бины
-как работает DI
+* Что такое бины?
+* как работает DI?
 
-"чуда не случилось"
+[.fragment]
+_Spring beans_ -- это переиспользуемые программные компоненты, автоматически подставляемые (Autowiring) в поля и параметры конструктора других бинов. В качестве бина можно использовать любой класс, как собственный, так и из сторонней библиотеки.
 
-Скоупы бинов
-как работать с бинами с разным жизненным циклом
-AOP -- прокси. Self-injecting
+== Виды injection («впрыскивания»)
 
-== Логирование в Java
+* Constructor
+* Setter
+* Field
+* Lookup method
+
+Хороший вопрос: когда какие виды injection лучше использовать?
+
+== Bean scopes
+
+* `SCOPE_SINGLETON` -- по умолчанию. Создаётся один при первом запросе и всюду впрыскивается единственный экземпляр.
+* `SCOPE_PROTOTYPE` -- создаётся новый при каждом запросе.
+* Есть ещё всякие, и можно создавать свои.
+
+== Использование prototype-bean внутри синглетона
+
+[source,java]
+----
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public class Bar {...}
+
+@Component
+public class Foo {
+    @Autowired
+    private Bar bar;
+
+    public void bar(){
+        //заинжектированный экземпляр bar всегда один и тот же
+    }
+}
+----
+
+== Способ №1
+
+[source,java]
+----
+@Component
+public class Foo {
+    @Autowired
+    private ObjectFactory<Bar> barFactory;
+
+    public  void bar(){
+      //теперь в b будет всякий раз новое (ну или одно и то же,
+      //если убрать SCOPE_PROTOTYPE, хотя где тогда смысл?)
+        Bar bar = barFactory.getObject();
+        ...
+    }
+}
+----
+
+== Способ №2
+
+[source,java]
+----
+@Component
+public abstract class Foo {
+  @Lookup
+  abstract Bar getBar();
+
+  public  void bar(){
+    Bar b = getBar();
+
+  }
+}
+
+----
+
+== AOP: реализация через Proxy-объект
+
+[graphviz,"proxy.png"]
+----
+digraph G {
+  graph [ dpi = 200 ];
+  compound=true;
+  rankdir="LR";
+
+  splines="line";
+
+  caller [shape="rectangle", style=rounded];
+  caller -> inv[lhead=cluster0;label="       "];
+  caller -> inv[arrowhead=none];
 
 
+  subgraph cluster0 {
+
+    inv[style=invis, shape=point];
+    target[shape="rectangle", style="rounded";]
+
+    label="proxy";
+    style="dashed,rounded";
+
+    inv -> target[style=dashed;];
+  }
+}
+----
+
+== Неувядающая классика
+
+вызов `@Tranasctional` из самого бина
+
+[source,java]
+----
+@Service
+public class MyService {
+
+    public void doSomething() {
+        // ...
+        doSomethingElse();
+    }
+
+    //Transactional тут не работает... :-(((
+    @Transactional
+    public void doSomethingElse() {
+        // ...
+    }
+}
+----
+
+== Workaround
+
+[source,java]
+----
+@Service
+public class MyService {
+
+    @Autowired
+    ObjectFactory<MyService> self;
+
+    public void doSomething() {
+        // ...
+        self.getObject().doSomethingElse();
+    }
+
+    @Transactional
+    public void doSomethingElse() {
+        // ...
+    }
+}
+----
+
+
+== Жизненный цикл бина
+
+
+[graphviz,"predestroy.png"]
+----
+digraph G {
+graph [ dpi = 180 ];
+rankdir="LR";
+node[shape=box];
+Constructor -> configurer1;
+
+subgraph cluster_1 {
+  label = "Configuration";
+  configurer2 -> configurer1 [dir="back"];
+  {rank=same configurer1 configurer2}
+}
+
+subgraph cluster_2{
+  label="Initialization";
+  postConstruct2 -> postConstruct1 [dir="back"];
+  {rank=same postConstruct1 postConstruct2}
+}
+configurer2 -> postConstruct1;
+
+
+subgraph cluster_3 {
+  label = "Wrapping";
+
+  proxyconfigurer2 -> proxyconfigurer1  [dir="back"];
+  {rank=same proxyconfigurer2 proxyconfigurer1}
+}
+postConstruct2 -> proxyconfigurer1;
+
+subgraph cluster_4 {
+  label = "PreDestroy";
+  preDestroy2 -> preDestroy1  [dir="back"];
+  {rank=same preDestroy1 preDestroy2}
+}
+
+proxyconfigurer2 -> preDestroy1;
+
+}
+----
+
+== BeanPostProcessor interface
+
+[source,java]
+----
+public interface BeanPostProcessor {
+  //впрыскиваем в бин значения
+  default Object postProcessBeforeInitialization(
+    Object bean, String beanName) throws BeansException {
+		return bean;
+  }
+
+  //возвращаем обёртку над бином
+  default Object postProcessAfterInitialization(
+    Object bean, String beanName) throws BeansException {
+		return bean;
+  }
+}
+----
+
+== BeanPostProcessor
+
+[graphviz,"bpp.png"]
+----
+digraph G {
+graph [ dpi = 160 ];
+rankdir="LR";
+compound=true;
+node[shape=box];
+Constructor -> configurer1;
+
+subgraph cluster_1 {
+  label = "BeanPostProcessor#\npostProcessBeforeInitialization";
+  style="filled";
+  color="#ffffcc";
+  configurer2 -> configurer1 [dir="back"];
+  {rank=same configurer1 configurer2}
+}
+
+subgraph cluster_2{
+  label="Initialization";
+  postConstruct2 -> postConstruct1 [dir="back"];
+  {rank=same   postConstruct1 postConstruct2}
+}
+configurer2 -> postConstruct1;
+
+
+subgraph cluster_3 {
+  label = "BeanPostProcessor#\npostProcessAfterInitialization";
+  style="filled";
+  color="#ffffcc";
+  proxyconfigurer2 -> proxyconfigurer1  [dir="back"];
+  {rank=same proxyconfigurer2 proxyconfigurer1}
+}
+postConstruct2 -> proxyconfigurer1;
+
+subgraph cluster_4 {
+
+  label = "PreDestroy";
+  preDestroy2 -> preDestroy1  [dir="back"];
+  {rank=same preDestroy1 preDestroy2}
+}
+
+proxyconfigurer2 -> preDestroy1;
+
+}
+----
 
 
 == Thanks for listening!
